@@ -3,15 +3,15 @@ var app = builder.Build();
 
 // app.MapGet("/", () => "Привет от ИСП-231! Автор: Черкина Дарья");
 
-// app.MapGet("/", () => "Добро пожаловать на сервер");
+app.MapGet("/", () => "Добро пожаловать на сервер");
 
-// app.MapGet("/about", () => "Это мой первый ASP.NET Core сервер");
+app.MapGet("/about", () => "Это мой первый ASP.NET Core сервер");
 
-// app.MapGet("/time", () => $"Время на сервере:{DateTime.Now}");
+app.MapGet("/time", () => $"Время на сервере:{DateTime.Now}");
 
-// app.MapGet("/hello/{name}", (string name) => $"Привет,{name}");
+app.MapGet("/hello/{name}", (string name) => $"Привет,{name}");
 
-// app.MapGet("/sum/{a}/{b}", (int a, int b) => $"Сумма {a+b}");
+app.MapGet("/sum/{a}/{b}", (int a, int b) => $"Сумма {a+b}");
 
 app.MapGet("/student", () => new {
     Name = "Иван Иванов",
@@ -33,6 +33,26 @@ app.MapGet("/product/{id}", (int id) => new Product (
     Price: id * 99.99m,
     InStock: id%2==0
 ));
+
+app.Use(async (context, next) => {
+    Console.WriteLine($"[LOG] {context.Request.Method} {context.Request.Path}");
+    await next(context);
+    Console.WriteLine($"[LOG] Ответ отправлен {context.Response.StatusCode}");
+});
+
+app.Use(async (context, next) => {
+    context.Response.Headers.Append("X-Powered-By", "ASP.NET Core Lab27");
+    await next(context);
+});
+
+app.Use(async (context, next) => {
+    var key = context.Request.Query["key"];
+    if (key != "secret") {
+        context.Response.StatusCode = 401;
+        return;
+    }
+    await next(context);
+});
 
 app.Run();
 
